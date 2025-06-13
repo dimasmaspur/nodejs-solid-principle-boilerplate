@@ -85,7 +85,6 @@ export class InitialDataSeeder {
         role: UserRole.ADMIN,
         isActive: true
       });
-      await admin.hashPassword();
       await userRepository.save(admin);
     }
   }

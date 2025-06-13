@@ -1,7 +1,7 @@
 import { UserRole } from '../../application/dtos/UserDTO';
 
 export interface AuthPayload {
-  userId: string;
+  id: string;
   email: string;
   role: UserRole;
 }

@@ -16,7 +16,7 @@ export class UserController {
     private deleteUserUseCase: DeleteUserUseCase
   ) {}
 
-  async create(req: Request, res: Response): Promise<Response> {
+  async create(req: Request, res: Response): Promise<void> {
     try {
       const userData: CreateUserDTO = req.body;
       const user = await this.createUserUseCase.execute(userData);
@@ -32,16 +32,17 @@ export class UserController {
         updatedAt: user.updatedAt
       };
 
-      return res.status(201).json(response);
+      res.status(201).apiSuccess(response, 'User berhasil dibuat');
     } catch (error) {
       if (error instanceof AppError) {
-        return res.status(error.statusCode).json({ message: error.message });
+        res.apiError(error.message, 'USER_ERROR', error);
+        return;
       }
-      return res.status(500).json({ message: 'Internal server error' });
+      res.apiError('Internal server error', 'SERVER_ERROR');
     }
   }
 
-  async getById(req: Request, res: Response): Promise<Response> {
+  async getById(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const user = await this.getUserUseCase.execute(id);
@@ -57,16 +58,17 @@ export class UserController {
         updatedAt: user.updatedAt
       };
 
-      return res.json(response);
+      res.apiSuccess(response);
     } catch (error) {
       if (error instanceof AppError) {
-        return res.status(error.statusCode).json({ message: error.message });
+        res.apiError(error.message, 'USER_ERROR', error);
+        return;
       }
-      return res.status(500).json({ message: 'Internal server error' });
+      res.apiError('Internal server error', 'SERVER_ERROR');
     }
   }
 
-  async getAll(_req: Request, res: Response): Promise<Response> {
+  async getAll(_req: Request, res: Response): Promise<void> {
     try {
       const users = await this.getAllUsersUseCase.execute();
       
@@ -80,16 +82,17 @@ export class UserController {
         updatedAt: user.updatedAt
       }));
 
-      return res.json(response);
+      res.apiSuccess(response);
     } catch (error) {
       if (error instanceof AppError) {
-        return res.status(error.statusCode).json({ message: error.message });
+        res.apiError(error.message, 'USER_ERROR', error);
+        return;
       }
-      return res.status(500).json({ message: 'Internal server error' });
+      res.apiError('Internal server error', 'SERVER_ERROR');
     }
   }
 
-  async update(req: Request, res: Response): Promise<Response> {
+  async update(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const userData: UpdateUserDTO = req.body;
@@ -106,25 +109,27 @@ export class UserController {
         updatedAt: user.updatedAt
       };
 
-      return res.json(response);
+      res.apiSuccess(response, 'User berhasil diupdate');
     } catch (error) {
       if (error instanceof AppError) {
-        return res.status(error.statusCode).json({ message: error.message });
+        res.apiError(error.message, 'USER_ERROR', error);
+        return;
       }
-      return res.status(500).json({ message: 'Internal server error' });
+      res.apiError('Internal server error', 'SERVER_ERROR');
     }
   }
 
-  async delete(req: Request, res: Response): Promise<Response> {
+  async delete(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       await this.deleteUserUseCase.execute(id);
-      return res.status(204).send();
+      res.apiSuccess(null, 'User berhasil dihapus');
     } catch (error) {
       if (error instanceof AppError) {
-        return res.status(error.statusCode).json({ message: error.message });
+        res.apiError(error.message, 'USER_ERROR', error);
+        return;
       }
-      return res.status(500).json({ message: 'Internal server error' });
+      res.apiError('Internal server error', 'SERVER_ERROR');
     }
   }
 } 

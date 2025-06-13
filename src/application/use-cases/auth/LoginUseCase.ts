@@ -43,7 +43,7 @@ export class LoginUseCase {
     }
 
     const token = this.jwtService.generateToken({
-      userId: user.id,
+      id: user.id,
       email: user.email,
       role: user.role
     });

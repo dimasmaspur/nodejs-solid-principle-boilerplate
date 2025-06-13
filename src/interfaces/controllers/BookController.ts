@@ -18,7 +18,7 @@ export class BookController {
     private deleteBookUseCase: DeleteBookUseCase
   ) {}
 
-  async create(req: Request, res: Response): Promise<Response> {
+  async create(req: Request, res: Response): Promise<void> {
     try {
       const bookDTO = plainToClass(CreateBookDTO, req.body);
       const errors = await validate(bookDTO);
@@ -44,28 +44,41 @@ export class BookController {
         updatedAt: book.updatedAt
       };
 
-      return res.status(201).json(response);
+      res.status(201).apiSuccess(response, 'Buku berhasil dibuat');
     } catch (error) {
       if (error instanceof AppError) {
-        return res.status(error.statusCode).json({ message: error.message });
+        res.apiError(error.message, 'BOOK_ERROR', error);
+        return;
       }
-      return res.status(500).json({ message: 'Internal server error' });
+      res.apiError('Internal server error', 'SERVER_ERROR');
     }
   }
 
-  async getAll(_req: Request, res: Response): Promise<Response> {
+  async getAll(_req: Request, res: Response): Promise<void> {
     try {
       const books = await this.getAllBooksUseCase.execute();
-      return res.json(books);
+      const response: BookResponseDTO[] = books.map(book => ({
+        id: book.id,
+        title: book.title,
+        author: book.author,
+        description: book.description,
+        price: book.price,
+        isbn: book.isbn,
+        stock: book.stock,
+        createdAt: book.createdAt,
+        updatedAt: book.updatedAt
+      }));
+      res.apiSuccess(response);
     } catch (error) {
       if (error instanceof AppError) {
-        return res.status(error.statusCode).json({ message: error.message });
+        res.apiError(error.message, 'BOOK_ERROR', error);
+        return;
       }
-      return res.status(500).json({ message: 'Internal server error' });
+      res.apiError('Internal server error', 'SERVER_ERROR');
     }
   }
 
-  async getById(req: Request, res: Response): Promise<Response> {
+  async getById(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const book = await this.getBookByIdUseCase.execute(id);
@@ -86,16 +99,17 @@ export class BookController {
         updatedAt: book.updatedAt
       };
 
-      return res.json(response);
+      res.apiSuccess(response);
     } catch (error) {
       if (error instanceof AppError) {
-        return res.status(error.statusCode).json({ message: error.message });
+        res.apiError(error.message, 'BOOK_ERROR', error);
+        return;
       }
-      return res.status(500).json({ message: 'Internal server error' });
+      res.apiError('Internal server error', 'SERVER_ERROR');
     }
   }
 
-  async update(req: Request, res: Response): Promise<Response> {
+  async update(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const bookDTO = plainToClass(UpdateBookDTO, req.body);
@@ -109,7 +123,7 @@ export class BookController {
       if (!book) {
         throw new AppError('Book not found', 404);
       }
-      
+
       const response: BookResponseDTO = {
         id: book.id,
         title: book.title,
@@ -122,30 +136,27 @@ export class BookController {
         updatedAt: book.updatedAt
       };
 
-      return res.json(response);
+      res.apiSuccess(response, 'Buku berhasil diupdate');
     } catch (error) {
       if (error instanceof AppError) {
-        return res.status(error.statusCode).json({ message: error.message });
+        res.apiError(error.message, 'BOOK_ERROR', error);
+        return;
       }
-      return res.status(500).json({ message: 'Internal server error' });
+      res.apiError('Internal server error', 'SERVER_ERROR');
     }
   }
 
-  async delete(req: Request, res: Response): Promise<Response> {
+  async delete(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const success = await this.deleteBookUseCase.execute(id);
-      
-      if (!success) {
-        throw new AppError('Book not found', 404);
-      }
-
-      return res.status(204).send();
+      await this.deleteBookUseCase.execute(id);
+      res.apiSuccess(null, 'Buku berhasil dihapus');
     } catch (error) {
       if (error instanceof AppError) {
-        return res.status(error.statusCode).json({ message: error.message });
+        res.apiError(error.message, 'BOOK_ERROR', error);
+        return;
       }
-      return res.status(500).json({ message: 'Internal server error' });
+      res.apiError('Internal server error', 'SERVER_ERROR');
     }
   }
 } 
